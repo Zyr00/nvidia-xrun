@@ -5,19 +5,10 @@ It started with a revelation that bumblebee in current state offers very poor pe
 ## Usage:
   1. switch to free tty
   2. login
-  3. run `nvidia-xrun [_app_]`
+  3. run `nvidia-xrun`
   4. enjoy
 
   Currently sudo is required as the script needs to wake up GPU, modprobe the nvidia driver and perform cleanup afterwards. For this we use bbswitch.
-
-## Structure
-* **nvidia-xrun** - uses following dir structure:
-* **/usr/bin/nvidia-xrun** - the executable script
-* **/etc/X11/nvidia-xorg.conf** - the main X confing file
-* **/etc/X11/xinit/nvidia-xinitrc** - xinitrc config file. Contains the setting of provider output source
-* **/etc/X11/xinit/nvidia-xinitrc.d** - custom xinitrc scripts directory
-* **/etc/X11/nvidia-xorg.conf.d** - custom X config directory
-* **[OPTIONAL] ~/.nvidia-xinitrc** - user-level custom xinit script file. You can put here your favourite window manager for example
 
 ## Setting the right bus id
 Usually the 1:0:0 bus is correct. If this is not your case(you can find out through lspci or bbswitch output mesages) you can create
