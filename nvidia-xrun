@@ -1,0 +1,72 @@
+#!/bin/bash
+DRY_RUN=0
+function printHelp {
+  echo "Utility to run games and applications in separate X on discrete Nvidia graphic card"
+  echo "Usage: "
+  echo "nvidia-xrun [<options>]"
+  echo "Options: "
+  echo "  -d    Dry run - prints the final command but does not execute it"
+}
+
+function execute {
+  if [ $DRY_RUN -eq 1 ]
+    then
+    echo ">>Dry run. Command: $*"
+  else
+    eval $*
+  fi
+}
+
+
+if [[ $EUID -eq 0 ]]; then
+   echo "This script must not be run as root" >&2
+   exit 1
+fi
+
+if [ "$1" == "-d" ]
+  then
+    DRY_RUN=1
+    shift 1
+fi
+
+# calculate current VT
+LVT=`fgconsole`
+
+# calculate first usable display
+XNUM="-1"
+SOCK="something"
+while [ ! -z "$SOCK" ]
+do
+  XNUM=$(( $XNUM + 1 ))
+  SOCK=$(ls -A -1 /tmp/.X11-unix | grep "X$XNUM" )
+done
+
+NEWDISP=":$XNUM"
+
+COMMAND="xinit $HOME/.nvidia-xinitrc -- $NEWDISP vt$LVT -nolisten tcp -br -config xorg.conf.d/10-nvidia.conf"
+
+echo 'Waking up nvidia GPU'
+execute "sudo tee /proc/acpi/bbswitch <<<ON"
+
+echo 'Loading nvidia module'
+execute "sudo modprobe nvidia"
+
+echo 'Loading nvidia_drm module'
+execute "sudo modprobe nvidia_drm"
+
+execute $COMMAND
+
+echo 'Unloading nvidia_drm module'
+execute "sudo rmmod nvidia_drm"
+
+echo 'Unloading nvidia_modeset module'
+execute "sudo rmmod nvidia_modeset"
+
+echo 'Unloading nvidia module'
+execute "sudo rmmod nvidia"
+
+echo 'Turning off nvidia GPU'
+execute "sudo tee /proc/acpi/bbswitch <<<OFF"
+
+echo -n 'Current state of nvidia GPU: '
+execute "cat /proc/acpi/bbswitch"
