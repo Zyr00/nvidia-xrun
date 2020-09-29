@@ -1,4 +1,5 @@
 #!/bin/bash
+SU=doas
 DRY_RUN=0
 function printHelp {
   echo "Utility to run games and applications in separate X on discrete Nvidia graphic card"
@@ -46,27 +47,27 @@ NEWDISP=":$XNUM"
 COMMAND="xinit $HOME/.nvidia-xinitrc -- $NEWDISP vt$LVT -nolisten tcp -br -config xorg.conf.d/10-nvidia.conf"
 
 echo 'Waking up nvidia GPU'
-execute "sudo tee /proc/acpi/bbswitch <<<ON"
+execute "${SU} tee /proc/acpi/bbswitch <<<ON"
 
 echo 'Loading nvidia module'
-execute "sudo modprobe nvidia"
+execute "${SU} modprobe nvidia"
 
 echo 'Loading nvidia_drm module'
-execute "sudo modprobe nvidia_drm"
+execute "${SU} modprobe nvidia_drm"
 
 execute $COMMAND
 
 echo 'Unloading nvidia_drm module'
-execute "sudo rmmod nvidia_drm"
+execute "${SU} rmmod nvidia_drm"
 
 echo 'Unloading nvidia_modeset module'
-execute "sudo rmmod nvidia_modeset"
+execute "${SU} rmmod nvidia_modeset"
 
 echo 'Unloading nvidia module'
-execute "sudo rmmod nvidia"
+execute "${SU} rmmod nvidia"
 
 echo 'Turning off nvidia GPU'
-execute "sudo tee /proc/acpi/bbswitch <<<OFF"
+execute "${SU} tee /proc/acpi/bbswitch <<<OFF"
 
 echo -n 'Current state of nvidia GPU: '
 execute "cat /proc/acpi/bbswitch"
