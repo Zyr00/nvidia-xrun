@@ -44,30 +44,24 @@ done
 
 NEWDISP=":$XNUM"
 
-COMMAND="xinit $HOME/.nvidia-xinitrc -- $NEWDISP vt$LVT -nolisten tcp -br -config xorg.conf.d/10-nvidia.conf"
+COMMAND="xinit $HOME/.nvidia-xinitrc -- $NEWDISP vt$LVT -nolisten tcp -br -config nvidia-xorg.conf
+-configdir xorg.conf.d"
 
 echo 'Waking up nvidia GPU'
 execute "${SU} tee /proc/acpi/bbswitch <<<ON"
 
-echo 'Loading nvidia module'
+echo 'Loading nvidia modules'
 execute "${SU} modprobe nvidia"
-
-echo 'Loading nvidia_drm module'
 execute "${SU} modprobe nvidia_drm"
 
 execute $COMMAND
 
-echo 'Unloading nvidia_drm module'
+echo 'Unloading nvidia modules'
 execute "${SU} rmmod nvidia_drm"
-
-echo 'Unloading nvidia_modeset module'
 execute "${SU} rmmod nvidia_modeset"
-
-echo 'Unloading nvidia module'
 execute "${SU} rmmod nvidia"
 
 echo 'Turning off nvidia GPU'
 execute "${SU} tee /proc/acpi/bbswitch <<<OFF"
-
 echo -n 'Current state of nvidia GPU: '
 execute "cat /proc/acpi/bbswitch"
