@@ -1,5 +1,4 @@
 #!/bin/bash
-SU=doas
 DRY_RUN=0
 function printHelp {
   echo "Utility to run games and applications in separate X on discrete Nvidia graphic card"
@@ -18,6 +17,14 @@ function execute {
   fi
 }
 
+if [ -z $SU ]; then
+   echo "Variable SU no set in env" >&2
+   echo "Should be: " >&2
+   echo " sudo -> To use sudo; " >&2
+   echo " doas -> To use doas; " >&2
+   echo " other -> To use other; " >&2
+   exit 1
+fi
 
 if [[ $EUID -eq 0 ]]; then
    echo "This script must not be run as root" >&2
@@ -48,20 +55,20 @@ COMMAND="xinit $HOME/.nvidia-xinitrc -- $NEWDISP vt$LVT -nolisten tcp -br -confi
 -configdir xorg.conf.d"
 
 echo 'Waking up nvidia GPU'
-execute "${SU} tee /proc/acpi/bbswitch <<<ON"
+execute "$SU tee /proc/acpi/bbswitch <<<ON"
 
 echo 'Loading nvidia modules'
-execute "${SU} modprobe nvidia"
-execute "${SU} modprobe nvidia_drm"
+execute "$SU modprobe nvidia"
+execute "$SU modprobe nvidia_drm"
 
 execute $COMMAND
 
 echo 'Unloading nvidia modules'
-execute "${SU} rmmod nvidia_drm"
-execute "${SU} rmmod nvidia_modeset"
-execute "${SU} rmmod nvidia"
+execute "$SU rmmod nvidia_drm"
+execute "$SU rmmod nvidia_modeset"
+execute "$SU rmmod nvidia"
 
 echo 'Turning off nvidia GPU'
-execute "${SU} tee /proc/acpi/bbswitch <<<OFF"
+execute "$SU tee /proc/acpi/bbswitch <<<OFF"
 echo -n 'Current state of nvidia GPU: '
 execute "cat /proc/acpi/bbswitch"
